@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'io/console'
 require_relative '../lib/gol'
 
 # gosper's glider gun
@@ -10,32 +11,30 @@ xy_pairs = [
   [35, 3], [36, 3], [35, 4], [36, 4],                                                                         # right_square
 ]
 
-# escape codes for the console
-require 'io/console'
-topleft     = "\e[H"
-hide_cursor = "\e[?25l"
-show_cursor = "\e[?25h"
+def self.hide_cursor
+  print "\e[?25l" # hide
+  yield
+ensure
+  print "\e[?25h" # show
+end
 
 def self.rgb(n)
-  n            = n%216 # ensure its within bounds
-  r            =  1 + n / 25
-  g            =  5 + n / 5 % 5
+  n            = n%216          # ensure its within bounds
+  r            =  1 + n / 25    # domain for each colour is between 1 and 5, not 0 and 5
+  g            =  5 + n / 5 % 5 # b/c otherwise it's too dark
   b            = 25 + n % 5
   base_colours = 16
   base_colours + r*36 + g*6 + b
 end
 
-begin
-  game = Gol.new Set.new xy_pairs # initialize in whatever way yours works
-  print hide_cursor
-  loop do
+hide_cursor do
+  topleft = "\e[H"
+  loop.inject Gol.new Set.new xy_pairs do |game|
     height, width = $stdin.winsize
-    print(topleft, game.to_s(width, height).lines.map
-                       .with_index { |line, i| "\e[38;5;#{rgb i}m#{line.chomp}\e[39m" }
-                       .join("\n"))
-    game = game.tomorrow
+    print topleft, game.to_s(width, height)
+                       .gsub(/^.*$/).with_index { |line, i| "\e[38;5;#{rgb i}m#{line.chomp}\e[39m" }
+                       .chomp
     sleep 0.01
+    game.tomorrow
   end
-ensure
-  print show_cursor
 end
