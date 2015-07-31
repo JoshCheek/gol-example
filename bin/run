@@ -16,13 +16,24 @@ topleft     = "\e[H"
 hide_cursor = "\e[?25l"
 show_cursor = "\e[?25h"
 
+def self.rgb(n)
+  n            = n%216 # ensure its within bounds
+  r            =  1 + n / 25
+  g            =  5 + n / 5 % 5
+  b            = 25 + n % 5
+  base_colours = 16
+  base_colours + r*36 + g*6 + b
+end
+
 begin
   game = Gol.new Set.new xy_pairs # initialize in whatever way yours works
   print hide_cursor
   loop do
     height, width = $stdin.winsize
-    print topleft, game.to_s(width, height).chomp # convert your game to a string
-    game = game.tomorrow                          # update in whatever way makes sense for your game
+    print(topleft, game.to_s(width, height).lines.map
+                       .with_index { |line, i| "\e[38;5;#{rgb i}m#{line.chomp}\e[39m" }
+                       .join("\n"))
+    game = game.tomorrow
     sleep 0.01
   end
 ensure
