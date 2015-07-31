@@ -1,32 +1,29 @@
 #!/usr/bin/env ruby
 require_relative '../lib/gol'
 
-if ARGV.any?
-  board = Gol.parse ARGV
-else
-  # stolen from https://github.com/JoshCheek/Conway-s-Game-of-Life/blob/master/bin/game_of_life
-  left_square   = '[1,5],[2,5],[1,6],[2,6]'
-  half_circle   = '[14,3],[13,3],[12,4],[11,5],[11,6],[11,7],[12,8],[13,9],[14,9]'
-  arrow         = '[16,4],[17,5],[15,6],[17,6],[18,6],[17,7],[16,8]'
-  frog          = '[25,1],[25,2],[23,2],[21,3],[22,3],[21,4],[22,4],[21,5],[22,5],[23,6],[25,6],[25,7]'
-  right_square  = '[35,3],[36,3],[35,4],[36,4]'
-  coords = eval "[#{left_square},#{half_circle},#{arrow},#{frog},#{right_square}]"
-  cells  = Array.new(20) { Array.new(40) { false } }
-  coords.each { |x, y| cells[y][x] = true }
-  board       = Gol::Board.new cells
-end
+# gosper's glider gun
+xy_pairs = [
+  [ 1, 5], [ 2, 5], [ 1, 6], [ 2, 6],                                                                         # left_square
+  [14, 3], [13, 3], [12, 4], [11, 5], [11, 6], [11, 7], [12, 8], [13, 9], [14, 9],                            # half_circle
+  [16, 4], [17, 5], [15, 6], [17, 6], [18, 6], [17, 7], [16, 8],                                              # arrow
+  [25, 1], [25, 2], [23, 2], [21, 3], [22, 3], [21, 4], [22, 4], [21, 5], [22, 5], [23, 6], [25, 6], [25, 7], # frog
+  [35, 3], [36, 3], [35, 4], [36, 4],                                                                         # right_square
+]
 
-clear       = "\e[H\e[2J"
+# escape codes for the console
+require 'io/console'
+topleft     = "\e[H"
 hide_cursor = "\e[?25l"
 show_cursor = "\e[?25h"
 
 begin
+  game = Gol.new Set.new xy_pairs # initialize in whatever way yours works
   print hide_cursor
   loop do
-    print "#{clear}#{board.to_s.gsub(/$/, '|')}"
-    print board.to_s.lines.first.gsub(/./, '-')
-    board = board.tomorrow
-    sleep 0.05
+    height, width = $stdin.winsize
+    print topleft, game.to_s(width, height).chomp # convert your game to a string
+    game = game.tomorrow                          # update in whatever way makes sense for your game
+    sleep 0.01
   end
 ensure
   print show_cursor

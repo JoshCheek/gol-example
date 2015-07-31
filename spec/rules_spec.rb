@@ -2,14 +2,17 @@ require 'gol'
 
 RSpec.describe 'rules' do
   def board_for(alive, neighbours)
-    cells = (8 - neighbours).times.map { false } + neighbours.times.map { true }
-    cells.insert(4, alive)
-    cells = cells.each_slice(3).to_a
-    board = Gol::Board.new(cells)
+    cells = Set.new [
+      [0,0], [1,0], [2,0],
+      [0,1],        [2,1],
+      [0,2], [1,2], [2,2],
+    ].take(neighbours)
+    cells << [1,1] if alive
+    board = Gol.new(cells)
 
     # sanity checking
-    expect(board.num_neighbours 1, 1).to eq neighbours
-    expect(board.alive? 1, 1).to eq alive
+    expect(board.num_neighbours [1, 1]).to eq neighbours
+    expect(board.alive? [1, 1]).to eq alive
 
     board
   end
@@ -17,12 +20,12 @@ RSpec.describe 'rules' do
 
   def assert_dies(alive:, neighbours:)
     board = board_for alive, neighbours
-    expect(board.tomorrow.alive? 1, 1).to eq false
+    expect(board.tomorrow.alive? [1, 1]).to eq false
   end
 
   def assert_lives(alive:, neighbours:)
     board = board_for alive, neighbours
-    expect(board.tomorrow.alive? 1, 1).to eq true
+    expect(board.tomorrow.alive? [1, 1]).to eq true
   end
 
   specify 'live cells with fewer than two live neighbours die (ie under-population)' do

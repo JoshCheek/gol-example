@@ -1,9 +1,9 @@
 require 'gol'
 
 RSpec.describe 'neighbours' do
-  def assert_neighbours(num_neighbours, cells)
-    board = Gol::Board.new(cells)
-    expect(board.num_neighbours 1, 1).to eq num_neighbours
+  def assert_neighbours(num_neighbours, grid)
+    board = Gol.from_bool_grid(grid)
+    expect(board.num_neighbours [1, 1]).to eq num_neighbours
   end
 
   it 'counts the number of living cells around a given position (horizontal, vertical, diagonal)' do
@@ -23,14 +23,14 @@ RSpec.describe 'neighbours' do
 
     # corners have 3 neighbours
     [[0, 0], [0, 2], [2, 0], [2, 2]].each do |y, x|
-      board = Gol::Board.new(cells)
-      expect(board.num_neighbours y, x).to eq 3
+      board = Gol.from_bool_grid(cells)
+      expect(board.num_neighbours [x, y]).to eq 3
     end
 
     # middle have 5 neighbours
     [[0, 1], [1, 0], [1, 2], [2, 1]].each do |y, x|
-      board = Gol::Board.new(cells)
-      expect(board.num_neighbours y, x).to eq 5
+      board = Gol.from_bool_grid(cells)
+      expect(board.num_neighbours [x, y]).to eq 5
     end
   end
 end
