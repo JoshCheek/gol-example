@@ -25,5 +25,9 @@ RSpec.describe 'acceptance' do
     expect(board.to_s 3, 3).to eq "   \n" +
                                   "XXX\n" +
                                   "   \n"
+
+    # different view into the world
+    expect(board.to_s 3, 2).to eq "   \n" +
+                                  "XXX\n"
   end
 end

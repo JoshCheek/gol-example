@@ -3,7 +3,7 @@ require 'set'
 class Gol
   def self.parse(argv)
     new(argv.each_with_index.with_object(Set.new) { |(row, y), cells|
-      row.chars.each.with_index { |bin, x| cells << [x, y] unless bin.to_i.zero? }
+      row.each_char.with_index { |bin, x| cells << [x, y] unless bin.to_i.zero? }
     })
   end
 
@@ -13,12 +13,10 @@ class Gol
     self.cells = cells
   end
 
-  def to_s width  = cells.max_by { |x, y| x }.first,
-           height = cells.max_by { |x, y| y }.last
-    height.times.each_with_object "" do |y, string|
-      width.times { |x| string << (cells.include?([x, y]) ? 'X' : ' ') }
-      string << "\n"
-    end
+  def to_s(w, h)
+    (w*h).times.each.with_object("")
+         .map { |n, s| alive?([n%w, n/w]) ? "X" : " " }
+         .join.gsub(/(.{#{w}})/, "\\1\n")
   end
 
   def alive?(cell)
@@ -26,49 +24,28 @@ class Gol
   end
 
   def num_neighbours(cell)
-    count = 0
-    each_neighbour cell do |cell|
-      count += 1 if alive? cell
-    end
-    count
+    neighbours_of(cell).count { |cell| alive? cell }
   end
 
   def alive_tomorrow?(cell)
     n = num_neighbours(cell)
-    if alive? cell
-      n == 2 || n == 3
-    else
-      n == 3
-    end
+    n == 3 || (n == 2 && alive?(cell))
   end
 
   def tomorrow
-    pairs = potentially_living.select do |cell|
-      alive_tomorrow? cell
-    end
-    Gol.new(Set.new pairs)
+    Gol.new Set.new potentially_living.select { |cell| alive_tomorrow? cell }
   end
 
   private
 
   def potentially_living
-    neighbours = []
-    cells.each do |cell|
-      each_neighbour(cell) { |neighbour| neighbours << neighbour }
-    end
-    cells | neighbours
+    cells | cells.flat_map { |cell| neighbours_of cell }
   end
 
-  def each_neighbour((y, x))
-    yield [y-1, x-1]
-    yield [y-1, x]
-    yield [y-1, x+1]
-
-    yield [y  , x-1]
-    yield [y  , x+1]
-
-    yield [y+1, x-1]
-    yield [y+1, x]
-    yield [y+1, x+1]
+  def neighbours_of((y, x))
+    [ [y-1, x-1], [y-1, x], [y-1, x+1],
+      [y  , x-1],           [y  , x+1],
+      [y+1, x-1], [y+1, x], [y+1, x+1],
+    ]
   end
 end

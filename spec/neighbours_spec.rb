@@ -17,7 +17,6 @@ RSpec.describe 'neighbours' do
     assert_neighbours 8, [[0,0],[1,0],[2,0], [0,1],[1,1],[2,1], [0,2],[1,2],[2,2]]
   end
 
-
   it 'considers cells neighbouring the borders to be dead' do
     cells = Set.new [
       [0, 0], [1, 0], [2, 0],
