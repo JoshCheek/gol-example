@@ -2,19 +2,9 @@ require 'set'
 
 class Gol
   def self.parse(argv)
-    bool_grid = argv.map do |binary_row|
-      binary_row.chars.map { |bin| !bin.to_i.zero? }
-    end
-    from_bool_grid bool_grid
-  end
-
-  def self.from_bool_grid(grid)
-    cells = grid.each_with_index.with_object Set.new do |(row, y), set|
-      row.each_with_index do |cell, x|
-        set << [x, y] if cell
-      end
-    end
-    Gol.new cells
+    new(argv.each_with_index.with_object(Set.new) { |(row, y), cells|
+      row.chars.each.with_index { |bin, x| cells << [x, y] unless bin.to_i.zero? }
+    })
   end
 
   attr_accessor :cells
